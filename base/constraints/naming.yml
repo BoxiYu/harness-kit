@@ -1,0 +1,46 @@
+# Naming Convention Constraint
+# Enforces consistent naming patterns across the codebase.
+
+name: naming-conventions
+description: Enforce consistent naming patterns for files, classes, and functions
+severity: warning
+enabled: true
+
+fix_message: |
+  VIOLATION [naming-conventions] at {file}:{line}
+    Rule: Code does not follow the project's naming conventions.
+    Fix: See the specific sub-rule violation below for details.
+
+rules:
+  - name: file-naming
+    description: Files use snake_case
+    file_patterns: ["src/**/*.py"]
+    check:
+      type: filename
+      pattern: "^[a-z][a-z0-9_]*\\.py$"
+    fix_message: |
+      VIOLATION [naming-conventions:file-naming] at {file}
+        Rule: Python files must use snake_case naming.
+        Fix: Rename {filename} to {suggested_name}.
+
+  - name: class-naming
+    description: Classes use PascalCase
+    file_patterns: ["src/**/*.py"]
+    check:
+      type: regex
+      pattern: "^class [A-Z][a-zA-Z0-9]*"
+    fix_message: |
+      VIOLATION [naming-conventions:class-naming] at {file}:{line}
+        Rule: Class names must use PascalCase.
+        Fix: Rename the class to PascalCase (e.g., MyClassName).
+
+  - name: constant-naming
+    description: Module-level constants use UPPER_SNAKE_CASE
+    file_patterns: ["src/**/*.py"]
+    check:
+      type: regex
+      pattern: "^[A-Z][A-Z0-9_]* ="
+    fix_message: |
+      VIOLATION [naming-conventions:constant-naming] at {file}:{line}
+        Rule: Module-level constants must use UPPER_SNAKE_CASE.
+        Fix: Rename the constant to UPPER_SNAKE_CASE (e.g., MAX_RETRY_COUNT).

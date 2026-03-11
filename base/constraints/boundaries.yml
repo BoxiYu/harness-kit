@@ -1,0 +1,30 @@
+# Boundary Validation Constraint
+# Enforces that data validation happens at system boundaries, not scattered throughout.
+
+name: boundary-validation
+description: Validate data at trust boundaries, not in business logic
+severity: warning
+enabled: true
+
+trust_boundaries:
+  - name: api-input
+    description: User input from API endpoints
+    patterns: ["src/routes/**", "src/api/**", "src/handlers/**"]
+  - name: external-api
+    description: Responses from external services
+    patterns: ["src/clients/**", "src/integrations/**"]
+  - name: database-output
+    description: Data read from database
+    patterns: ["src/repositories/**"]
+
+interior_zones:
+  - name: services
+    description: Business logic should trust validated data
+    patterns: ["src/services/**"]
+
+fix_message: |
+  VIOLATION [boundary-validation] at {file}:{line}
+    Rule: Data validation should happen at system boundaries, not in interior business logic.
+    Fix: Move the validation to the boundary layer ({boundary_name}) that first receives this data.
+         The service layer should trust that data has already been validated.
+    Found: {validation_pattern} in a non-boundary module.

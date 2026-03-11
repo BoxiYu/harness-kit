@@ -1,0 +1,40 @@
+# Dependency Layer Constraint
+# Enforces unidirectional dependency flow between architectural layers.
+
+name: dependency-layers
+description: Each layer may only import from layers with a lower index
+severity: error
+enabled: true
+
+layers:
+  - name: types
+    index: 0
+    patterns: ["src/types/**", "src/**/types.*"]
+  - name: config
+    index: 1
+    patterns: ["src/config/**", "src/**/config.*"]
+  - name: repository
+    index: 2
+    patterns: ["src/repositories/**", "src/**/repo.*", "src/**/repository.*"]
+  - name: service
+    index: 3
+    patterns: ["src/services/**", "src/**/service.*"]
+  - name: runtime
+    index: 4
+    patterns: ["src/runtime/**", "src/**/middleware.*", "src/**/app.*"]
+  - name: ui
+    index: 5
+    patterns: ["src/ui/**", "src/components/**", "src/pages/**"]
+
+cross_cutting:
+  - auth
+  - logging
+  - telemetry
+  - feature_flags
+
+fix_message: |
+  VIOLATION [dependency-layers] at {file}:{line}
+    Rule: {source_layer} (layer {source_index}) must not import from {target_layer} (layer {target_index}).
+    Fix: Move the shared logic to layer {source_index} or lower,
+         or introduce a Provider interface that {source_layer} defines and {target_layer} implements.
+    Import: {import_statement}
