@@ -6,7 +6,7 @@
 ## Project Overview
 
 - **Project**: [PROJECT_NAME]
-- **Harness Kit**: v0.1.0
+- **Harness Kit**: v0.2.0
 - **Constitution**: `.harness/memory/constitution.md`
 
 ## Quick Rules
@@ -47,6 +47,18 @@ Every change must pass:
 ```
 harness lint → type-check → test → build → security scan
 ```
+
+## Slash Commands
+
+If your agent supports slash commands (e.g., Claude), these are available:
+
+| Command | Purpose |
+|---------|---------|
+| `/harness-lint` | Check and fix constraint violations |
+| `/harness-gc` | Detect and fix codebase entropy |
+| `/harness-audit` | Full health report with scores and recommendations |
+| `/harness-setup` | Onboard to this project (read rules, constraints, health) |
+| `/harness-constraint` | Create a new constraint through a guided workflow |
 
 ## Useful Commands
 

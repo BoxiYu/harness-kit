@@ -1,6 +1,6 @@
 [project]
 name = "harness-kit"
-version = "0.1.0"
+version = "0.2.0"
 description = "A framework for Harness Engineering — constraints, feedback loops, and lifecycle systems that make AI coding agents reliable at scale."
 requires-python = ">=3.11"
 license = "MIT"

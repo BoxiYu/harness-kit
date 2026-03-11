@@ -60,12 +60,19 @@ def _find_base_dir() -> Path:
     raise typer.Exit(1)
 
 
-def _copy_tree(src: Path, dst: Path) -> list[str]:
-    """Recursively copy a directory tree, returning list of created files."""
+def _copy_tree(src: Path, dst: Path, *, exclude: tuple[str, ...] = ()) -> list[str]:
+    """Recursively copy a directory tree, returning list of created files.
+
+    Args:
+        exclude: Top-level directory names to skip (e.g., ("commands",)).
+    """
     created = []
     for item in sorted(src.rglob("*")):
         if item.is_file():
             rel = item.relative_to(src)
+            # Skip excluded top-level directories
+            if exclude and rel.parts[0] in exclude:
+                continue
             target = dst / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             if not target.exists():
@@ -87,6 +94,35 @@ def _replace_placeholders(path: Path, project_name: str) -> None:
         content = content.replace("[DATE]", today)
         if content != original:
             md_file.write_text(content, encoding="utf-8")
+
+
+def _generate_inline_commands(commands_dir: Path, commands_rel: str) -> None:
+    """Fallback: generate minimal inline slash commands when templates are missing."""
+    commands = {
+        "harness-lint.md": (
+            "Run harness lint to check all architectural constraints. "
+            "Report violations with their fix messages. "
+            "Apply fixes for any violations found. "
+            "Re-run until all constraints pass."
+        ),
+        "harness-gc.md": (
+            "Run harness gc --report to check for entropy in the codebase. "
+            "Review the garbage collection report. "
+            "Flag any documentation freshness issues, pattern drift, or constraint bypasses. "
+            "Propose fixes for the most critical issues."
+        ),
+        "harness-audit.md": (
+            "Run harness audit to generate a full health report. "
+            "Summarize the key findings: constraint violations, feedback loop health, "
+            "entropy indicators. Recommend the top 3 actions to improve codebase health."
+        ),
+    }
+
+    for filename, content in commands.items():
+        cmd_file = commands_dir / filename
+        if not cmd_file.exists():
+            cmd_file.write_text(content, encoding="utf-8")
+            console.print(f"  Created [cyan]{commands_rel}/{filename}[/cyan]")
 
 
 def _setup_agent_context(project_dir: Path, ai: str, project_name: str) -> None:
@@ -136,36 +172,21 @@ See `.harness/context/ARCHITECTURE.md` for the dependency layer model.
         context_file.write_text(context_content, encoding="utf-8")
         console.print(f"  Created [cyan]{agent_config['context_file']}[/cyan]")
 
-    # Create slash commands for Claude
-    if ai == "claude" and agent_config.get("commands_dir"):
+    # Create slash commands for agents with a commands_dir
+    if agent_config.get("commands_dir"):
         commands_dir = project_dir / agent_config["commands_dir"]
         commands_dir.mkdir(parents=True, exist_ok=True)
 
-        commands = {
-            "harness-lint.md": (
-                "Run harness lint to check all architectural constraints. "
-                "Report violations with their fix messages. "
-                "Apply fixes for any violations found. "
-                "Re-run until all constraints pass."
-            ),
-            "harness-gc.md": (
-                "Run harness gc --report to check for entropy in the codebase. "
-                "Review the garbage collection report. "
-                "Flag any documentation freshness issues, pattern drift, or constraint bypasses. "
-                "Propose fixes for the most critical issues."
-            ),
-            "harness-audit.md": (
-                "Run harness audit to generate a full health report. "
-                "Summarize the key findings: constraint violations, feedback loop health, "
-                "entropy indicators. Recommend the top 3 actions to improve codebase health."
-            ),
-        }
-
-        for filename, content in commands.items():
-            cmd_file = commands_dir / filename
-            if not cmd_file.exists():
-                cmd_file.write_text(content, encoding="utf-8")
-                console.print(f"  Created [cyan]{agent_config['commands_dir']}/{filename}[/cyan]")
+        # Try to copy from base/commands/{agent}/ template directory
+        base_dir = _find_base_dir()
+        base_commands = base_dir / "commands" / ai
+        if base_commands.is_dir():
+            created = _copy_tree(base_commands, commands_dir)
+            for f in created:
+                console.print(f"  Created [cyan]{agent_config['commands_dir']}/{f}[/cyan]")
+        else:
+            # Fallback: generate minimal inline commands
+            _generate_inline_commands(commands_dir, agent_config["commands_dir"])
 
 
 def _setup_git_hooks(project_dir: Path) -> None:
@@ -256,7 +277,7 @@ def init(
     # Copy base templates
     base_dir = _find_base_dir()
     console.print("\n[bold]Setting up .harness/ directory...[/bold]")
-    created = _copy_tree(base_dir, harness_path)
+    created = _copy_tree(base_dir, harness_path, exclude=("commands",))
     for f in created:
         console.print(f"  Created [cyan].harness/{f}[/cyan]")
 
