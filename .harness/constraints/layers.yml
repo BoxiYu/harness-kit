@@ -1,0 +1,30 @@
+# Dependency Layer Constraint for harness-kit itself
+# The harness-kit codebase has its own layered architecture.
+
+name: dependency-layers
+description: Enforce dependency direction within harness-kit
+severity: error
+enabled: true
+
+layers:
+  - name: engine
+    index: 0
+    patterns: ["src/harness_cli/engine/**"]
+  - name: reporters
+    index: 1
+    patterns: ["src/harness_cli/reporters/**"]
+  - name: commands
+    index: 2
+    patterns: ["src/harness_cli/commands/**"]
+
+# engine/ is the core — no dependencies on commands/ or reporters/
+# reporters/ may use engine/, but not commands/
+# commands/ may use both engine/ and reporters/
+
+cross_cutting: []
+
+fix_message: |
+  VIOLATION [dependency-layers] at {file}:{line}
+    Rule: {source_layer} (layer {source_index}) must not import from {target_layer} (layer {target_index}).
+    Fix: Move the shared logic to the engine/ layer, or pass it as a parameter.
+    Import: {import_statement}

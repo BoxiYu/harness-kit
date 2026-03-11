@@ -1,0 +1,1 @@
+Run harness lint to check all architectural constraints. Report violations with their fix messages. Apply fixes for any violations found. Re-run until all constraints pass.

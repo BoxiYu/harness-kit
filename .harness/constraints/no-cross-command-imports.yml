@@ -1,0 +1,22 @@
+# No Cross-Command Imports
+# Each command module should be independent. Commands should not import
+# from other command modules — shared logic belongs in engine/.
+
+name: no-cross-command-imports
+description: Command modules must not import from other command modules
+severity: error
+enabled: true
+
+file_patterns:
+  - "src/harness_cli/commands/*.py"
+  - "!src/harness_cli/commands/__init__.py"
+
+check:
+  type: custom
+  rule: A command module should not import from harness_cli.commands.*
+
+fix_message: |
+  VIOLATION [no-cross-command-imports] at {file}:{line}
+    Rule: Command modules must not import from other command modules.
+    Fix: Extract the shared logic into src/harness_cli/engine/ and import from there.
+    This keeps commands independent and prevents circular dependencies.

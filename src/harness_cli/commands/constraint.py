@@ -121,6 +121,15 @@ def constraint_add(
 
 @constraint_app.command("check")
 def constraint_check() -> None:
-    """Run all constraint checks against the codebase (alias for harness lint)."""
-    from harness_cli.commands.lint import lint
-    lint(fix_instructions=True, layer=False, naming=False)
+    """Run all constraint checks against the codebase (alias for harness lint).
+
+    Delegates to the CLI entry point rather than importing across commands.
+    """
+    import subprocess
+    import sys
+
+    result = subprocess.run(
+        [sys.executable, "-m", "harness_cli", "lint", "--fix-instructions"],
+        cwd=Path.cwd(),
+    )
+    raise typer.Exit(result.returncode)

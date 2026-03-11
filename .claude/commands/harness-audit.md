@@ -1,0 +1,1 @@
+Run harness audit to generate a full health report. Summarize the key findings: constraint violations, feedback loop health, entropy indicators. Recommend the top 3 actions to improve codebase health.

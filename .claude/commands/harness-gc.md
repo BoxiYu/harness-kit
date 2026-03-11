@@ -1,0 +1,1 @@
+Run harness gc --report to check for entropy in the codebase. Review the garbage collection report. Flag any documentation freshness issues, pattern drift, or constraint bypasses. Propose fixes for the most critical issues.
