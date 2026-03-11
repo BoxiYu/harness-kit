@@ -23,6 +23,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/harness_cli"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"base" = "harness_cli/_base"
+
 [project.optional-dependencies]
 test = [
     "pytest>=7.0",
