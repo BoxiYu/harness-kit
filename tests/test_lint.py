@@ -91,14 +91,8 @@ class TestNamingRules:
             }],
         }
         violations = _check_naming_rules(constraint, project)
-        # __init__.py starts with underscore, doesn't match ^[a-z]
-        # This is a known edge case — __init__.py shouldn't be flagged
-        # For now we document this behavior
         init_violations = [v for v in violations if "__init__" in v["file"]]
-        # The pattern ^[a-z] won't match __init__.py, so it IS flagged
-        # This is expected with the current regex — the pattern should
-        # be refined to exclude dunder files in real usage
-        assert len(init_violations) == 1  # known limitation
+        assert len(init_violations) == 0  # dunder files are skipped
 
 
 class TestLayerRules:

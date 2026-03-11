@@ -61,6 +61,9 @@ def _check_naming_rules(constraint: dict, root: Path) -> list[dict]:
         check_type = check.get("type", "")
 
         for f in files:
+            # Skip dunder files (__init__.py, __main__.py, etc.)
+            if f.name.startswith("__") and f.name.endswith("__.py"):
+                continue
             if check_type == "filename":
                 pattern = check.get("pattern", "")
                 if pattern and not re.match(pattern, f.name):
